@@ -11,7 +11,7 @@ const PHASES = [
   { id: 8, name: "Realtime & Notifications", status: "done" },
   { id: 9, name: "Testing & Security Audit", status: "done" },
   { id: 10, name: "Deployment", status: "done" },
-  { id: 11, name: "Demo & Sales Package", status: "next" },
+  { id: 11, name: "Demo & Sales Package", status: "done" },
 ] as const;
 
 const STACK = [
@@ -52,9 +52,9 @@ export default function Home() {
           into qualified, property-matched leads.
         </p>
         <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Foundations are live: the monorepo, FastAPI service, and this
-          dashboard shell. Conversational AI, lead qualification, and the
-          command center arrive phase by phase.
+          The full pipeline is live: WhatsApp/SMS ingest, LangGraph
+          qualification, deterministic scoring, property matching, a realtime
+          agent command center, and a security-audited, deploy-ready stack.
         </p>
       </header>
 
@@ -108,7 +108,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-auto border-t border-border pt-6 text-xs text-muted-foreground">
-        Alpha AI · Phases 1–10 complete ·{" "}
+        Alpha AI · All 11 phases complete ·{" "}
         <a href="/login" className="text-primary underline underline-offset-2">
           Agent sign-in
         </a>{" "}

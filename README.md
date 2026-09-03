@@ -20,7 +20,7 @@ Lead → WhatsApp/SMS → Twilio → FastAPI + AI pipeline → PostgreSQL (Supab
 | `frontend/` | Next.js 16 + TypeScript + Tailwind CSS 4 (shadcn/ui from Phase 7) |
 | `backend/` | FastAPI + Python — `api/` `core/` `models/` `schemas/` `services/` `agents/` `repositories/` `workers/` |
 | `database/` | `schema.sql`, `migrations/`, `seed.sql` (Phase 2) |
-| `docs/` | [architecture](docs/architecture.md) · [api](docs/api.md) · [database](docs/database.md) · [deployment](docs/deployment.md) |
+| `docs/` | [architecture](docs/architecture.md) · [api](docs/api.md) · [database](docs/database.md) · [deployment](docs/deployment.md) · [security audit](docs/security-audit.md) · [demo script](docs/demo-script.md) · [sales package](docs/sales-package.md) |
 | `.github/workflows/` | CI: lint + type-check + tests for backend & frontend |
 
 ## Dashboard (local)
@@ -52,6 +52,18 @@ cd frontend && npm test
 
 Security posture and the full audit (findings, fixes, accepted risks,
 dependency remediation) live in [docs/security-audit.md](docs/security-audit.md).
+
+## Demo & sales (Phase 11)
+
+```bash
+cd backend
+.venv/bin/python scripts/demo.py reset   # curated board (idempotent)
+.venv/bin/python scripts/demo.py flow    # live lead lands on the open dashboard
+```
+
+Pitch materials: [docs/demo-script.md](docs/demo-script.md) (8-minute
+talk track) · [docs/sales-package.md](docs/sales-package.md) (ICP, ROI
+math, pricing, objections).
 
 ## Deploying (Phase 10)
 
@@ -123,7 +135,9 @@ CI runs the same commands on every push/PR (`.github/workflows/ci.yml`).
 | 8 | Realtime & notifications (SSE event bus, live board/transcript, bell + toasts) | ✅ **done** |
 | 9 | Testing + security audit (96% coverage, rate limiting, headers, CVE remediation) | ✅ **done** |
 | 10 | Deployment (Docker images, compose stack, Render/Railway/Vercel configs, Supabase JWKS auth, go-live runbook) | ✅ **done** |
-| 11 | Demo + sales package | ⬜ up next |
+| 11 | Demo + sales package (curated demo data, scripted live flow, talk track, pricing/ROI) | ✅ **done** |
+
+**All 11 phases complete.**
 
 ## Core principles
 
