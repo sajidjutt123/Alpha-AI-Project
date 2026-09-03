@@ -4,11 +4,11 @@ import uuid
 from collections.abc import Sequence
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Lead, LeadStatus
+from app.models import Lead, LeadPropertyMatch, LeadStatus, Property
 from app.repositories.base import BaseRepository
 
 
@@ -56,6 +56,7 @@ class LeadRepository(BaseRepository[Lead]):
         *,
         organization_id: uuid.UUID,
         status: LeadStatus | None = None,
+        query: str | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> Sequence[Lead]:
@@ -68,8 +69,55 @@ class LeadRepository(BaseRepository[Lead]):
         )
         if status is not None:
             stmt = stmt.where(Lead.status == status)
+        if query:
+            pattern = f"%{query}%"
+            stmt = stmt.where(
+                Lead.name.ilike(pattern)
+                | Lead.phone.ilike(pattern)
+                | Lead.preferred_location.ilike(pattern)
+            )
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    async def count_for_organization(
+        self,
+        *,
+        organization_id: uuid.UUID,
+        status: LeadStatus | None = None,
+        query: str | None = None,
+    ) -> int:
+        stmt = select(func.count()).select_from(Lead).where(Lead.organization_id == organization_id)
+        if status is not None:
+            stmt = stmt.where(Lead.status == status)
+        if query:
+            pattern = f"%{query}%"
+            stmt = stmt.where(
+                Lead.name.ilike(pattern)
+                | Lead.phone.ilike(pattern)
+                | Lead.preferred_location.ilike(pattern)
+            )
+        result = await self.session.execute(stmt)
+        return int(result.scalar_one())
+
+    async def get_for_organization(
+        self, lead_id: uuid.UUID, organization_id: uuid.UUID
+    ) -> Lead | None:
+        result = await self.session.execute(
+            select(Lead).where(Lead.id == lead_id, Lead.organization_id == organization_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def matches_for_lead(
+        self, lead_id: uuid.UUID
+    ) -> Sequence[tuple[Property, LeadPropertyMatch]]:
+        """(property, match) pairs for a lead, newest match first."""
+        result = await self.session.execute(
+            select(Property, LeadPropertyMatch)
+            .join(LeadPropertyMatch, LeadPropertyMatch.property_id == Property.id)
+            .where(LeadPropertyMatch.lead_id == lead_id)
+            .order_by(LeadPropertyMatch.created_at.desc())
+        )
+        return result.tuples().all()
 
     async def update_fields(self, lead: Lead, **fields: Any) -> Lead:
         """Apply a partial update (e.g. AI-extracted requirements)."""

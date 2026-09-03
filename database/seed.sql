@@ -16,18 +16,24 @@ ON CONFLICT (id) DO NOTHING;
 
 -- ===========================================================================
 -- Agents
+-- auth_user_id links each agent to a Supabase Auth user (dev/demo tokens).
 -- ===========================================================================
-INSERT INTO agents (id, organization_id, name, email, phone, role) VALUES
+INSERT INTO agents (id, organization_id, name, email, phone, role, auth_user_id) VALUES
     ('11111111-1111-4111-8111-000000000101', '11111111-1111-4111-8111-111111111111',
-     'Ahmed Raza', 'ahmed@alphaestates.pk', '+923001234500', 'OWNER'),
+     'Ahmed Raza', 'ahmed@alphaestates.pk', '+923001234500', 'OWNER',
+     '11111111-1111-4111-8111-00000000a101'),
     ('11111111-1111-4111-8111-000000000102', '11111111-1111-4111-8111-111111111111',
-     'Fatima Khan', 'fatima@alphaestates.pk', '+923001234501', 'AGENT'),
+     'Fatima Khan', 'fatima@alphaestates.pk', '+923001234501', 'AGENT',
+     '11111111-1111-4111-8111-00000000a102'),
     ('11111111-1111-4111-8111-000000000103', '11111111-1111-4111-8111-111111111111',
-     'Usman Ali', 'usman@alphaestates.pk', '+923001234502', 'AGENT'),
+     'Usman Ali', 'usman@alphaestates.pk', '+923001234502', 'AGENT',
+     '11111111-1111-4111-8111-00000000a103'),
     ('22222222-2222-4222-8222-000000000201', '22222222-2222-4222-8222-222222222222',
-     'Hassan Sheikh', 'hassan@galaxyproperties.pk', '+92211234500', 'OWNER'),
+     'Hassan Sheikh', 'hassan@galaxyproperties.pk', '+92211234500', 'OWNER',
+     '22222222-2222-4222-8222-00000000a201'),
     ('22222222-2222-4222-8222-000000000202', '22222222-2222-4222-8222-222222222222',
-     'Zara Iqbal', 'zara@galaxyproperties.pk', '+92211234501', 'AGENT')
+     'Zara Iqbal', 'zara@galaxyproperties.pk', '+92211234501', 'AGENT',
+     '22222222-2222-4222-8222-00000000a202')
 ON CONFLICT (id) DO NOTHING;
 
 -- ===========================================================================

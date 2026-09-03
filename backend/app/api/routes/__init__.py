@@ -7,9 +7,13 @@ into a single `api_router` that `app.main` mounts under the versioned prefix
 
 from fastapi import APIRouter
 
-from app.api.routes import health
+from app.api.routes import agents, analytics, health, leads, properties
 
 api_router = APIRouter()
 api_router.include_router(health.router)
+api_router.include_router(leads.router)
+api_router.include_router(properties.router)
+api_router.include_router(agents.router)
+api_router.include_router(analytics.router)
 
 __all__ = ["api_router"]

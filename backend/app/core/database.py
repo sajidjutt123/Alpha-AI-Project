@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 
 from app.core.config import get_settings
 
@@ -26,8 +27,16 @@ TENANT_GUC = "app.current_organization_id"
 
 @lru_cache
 def get_engine() -> AsyncEngine:
-    """Cached engine built from application settings."""
-    return create_async_engine(get_settings().database_url, pool_pre_ping=True)
+    """Cached engine built from application settings.
+
+    Tests run with per-function event loops, so pooling connections across
+    them is unsound — the test environment uses NullPool.
+    """
+    settings = get_settings()
+    options: dict[str, object] = {}
+    if settings.environment == "test":
+        options["poolclass"] = NullPool
+    return create_async_engine(settings.database_url, pool_pre_ping=True, **options)
 
 
 @lru_cache

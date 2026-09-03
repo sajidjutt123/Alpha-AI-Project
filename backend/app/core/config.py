@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     supabase_url: str | None = None
     supabase_anon_key: str | None = None
     supabase_service_role_key: str | None = None
+    # Supabase Auth JWT secret ("legacy" secret in the dashboard) — production.
+    supabase_jwt_secret: str | None = None
+    # Development/test token secret — used only when the Supabase secret is
+    # absent. Tokens are minted by tests via `app.core.auth.issue_dev_token`.
+    auth_dev_secret: str | None = None
 
     # --- Twilio (Phase 4: WhatsApp/SMS webhooks) -----------------------------
     twilio_account_sid: str | None = None

@@ -1,6 +1,18 @@
-"""Business logic services (Phase 3+).
+"""Business logic services.
 
-Services orchestrate repositories and implement rules — the LLM never
-implements business logic. Planned: lead_service, property_service,
-matching_service, scoring_service, notification_service.
+Services orchestrate repositories and own the business rules (status
+transitions, validation, scoring) — the LLM never implements business logic.
 """
+
+from app.services.agents import AgentService
+from app.services.analytics import AnalyticsService
+from app.services.leads import ALLOWED_TRANSITIONS, LeadService
+from app.services.properties import PropertyService
+
+__all__ = [
+    "ALLOWED_TRANSITIONS",
+    "AgentService",
+    "AnalyticsService",
+    "LeadService",
+    "PropertyService",
+]

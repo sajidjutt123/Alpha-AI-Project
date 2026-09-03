@@ -1,11 +1,31 @@
-"""Shared Pydantic response/request schemas (API contracts).
+"""Shared Pydantic response/request schemas (API contracts)."""
 
-Schemas are grouped by domain and filled in as phases land:
-- Phase 3: leads, properties, agents
-- Phase 4: webhook payloads
-- Phase 5: AI intent/extraction/qualification
-"""
-
+from app.schemas.agents import AgentOut, MeOut
+from app.schemas.analytics import AnalyticsOverview
 from app.schemas.health import HealthResponse
+from app.schemas.leads import (
+    LeadCreate,
+    LeadDetail,
+    LeadOut,
+    LeadUpdate,
+    MatchedProperty,
+    TranscriptMessage,
+)
+from app.schemas.pagination import Page
+from app.schemas.properties import PropertyCreate, PropertyOut
 
-__all__ = ["HealthResponse"]
+__all__ = [
+    "AgentOut",
+    "AnalyticsOverview",
+    "HealthResponse",
+    "LeadCreate",
+    "LeadDetail",
+    "LeadOut",
+    "LeadUpdate",
+    "MatchedProperty",
+    "MeOut",
+    "Page",
+    "PropertyCreate",
+    "PropertyOut",
+    "TranscriptMessage",
+]
