@@ -2,12 +2,12 @@ import { BackendStatus } from "@/components/status/backend-status";
 
 const PHASES = [
   { id: 1, name: "Architecture & Scaffolding", status: "done" },
-  { id: 2, name: "Database & Auth", status: "next" },
-  { id: 3, name: "FastAPI Core APIs", status: "todo" },
-  { id: 4, name: "Twilio Webhook Pipeline", status: "todo" },
-  { id: 5, name: "AI Engine", status: "todo" },
-  { id: 6, name: "Property Matching", status: "todo" },
-  { id: 7, name: "Agent Dashboard", status: "todo" },
+  { id: 2, name: "Database & Auth", status: "done" },
+  { id: 3, name: "FastAPI Core APIs", status: "done" },
+  { id: 4, name: "Twilio Webhook Pipeline", status: "done" },
+  { id: 5, name: "AI Engine", status: "done" },
+  { id: 6, name: "Property Matching", status: "done" },
+  { id: 7, name: "Agent Dashboard", status: "next" },
   { id: 8, name: "Realtime & Notifications", status: "todo" },
   { id: 9, name: "Testing & Security Audit", status: "todo" },
   { id: 10, name: "Deployment", status: "todo" },
@@ -108,9 +108,12 @@ export default function Home() {
       </section>
 
       <footer className="mt-auto border-t border-border pt-6 text-xs text-muted-foreground">
-        Alpha AI · Phase 1 of 11 — repository architecture complete ·{" "}
-        <code className="rounded bg-muted px-1 py-0.5">/dashboard</code>{" "}
-        unlocks in Phase 7
+        Alpha AI · Phases 1–6 complete ·{" "}
+        <a href="/login" className="text-primary underline underline-offset-2">
+          Agent sign-in
+        </a>{" "}
+        unlocks the command center ·{" "}
+        <code className="rounded bg-muted px-1 py-0.5">/dashboard</code>
       </footer>
     </main>
   );

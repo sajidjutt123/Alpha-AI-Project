@@ -196,7 +196,7 @@ async def seed_organization(db_session: AsyncSession, *, name: str) -> OrgContex
             Agent(
                 organization_id=org_id,
                 name="Owner One",
-                email=f"owner-{org_id.hex[:8]}@example.test",
+                email=f"owner-{org_id.hex[:8]}@example.com",
                 role="OWNER",  # type: ignore[arg-type]
                 auth_user_id=owner_auth,
             )
@@ -205,7 +205,7 @@ async def seed_organization(db_session: AsyncSession, *, name: str) -> OrgContex
             Agent(
                 organization_id=org_id,
                 name="Agent Two",
-                email=f"agent-{org_id.hex[:8]}@example.test",
+                email=f"agent-{org_id.hex[:8]}@example.com",
                 role="AGENT",  # type: ignore[arg-type]
                 auth_user_id=teammate_auth,
             )

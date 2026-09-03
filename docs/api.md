@@ -32,6 +32,12 @@ query in the request runs inside that tenant's Row Level Security context.
 
 ## Endpoints
 
+### Auth
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/auth/dev-login` | `{email}` → `{token, agent}` — dev/demo only (refuses in production; production dashboards use Supabase Auth tokens as the bearer) |
+
 ### System (public)
 
 | Method | Path | Description |
@@ -46,6 +52,7 @@ query in the request runs inside that tenant's Row Level Security context.
 | POST | `/leads` | Create — 409 if phone already has a lead in this org |
 | GET | `/leads/{id}` | Detail: lead + full transcript + matched properties (with scores/reasons) |
 | PATCH | `/leads/{id}` | Partial update; `status` validated against transition rules, `assigned_agent_id` must be an org agent |
+| POST | `/leads/{id}/messages` | Agent takeover message — stored (DASHBOARD channel) + delivered on the customer's channel; `NEW → CONTACTED` |
 
 Status transitions (business rule, `422 business_rule_violation` otherwise):
 

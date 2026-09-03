@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { apiFetch } from "@/lib/api";
+import { healthApi } from "@/lib/api";
 import type { HealthResponse } from "@/types/api";
 
 export type BackendConnectionState = "checking" | "online" | "offline";
@@ -28,7 +28,7 @@ export function useBackendHealth(): BackendHealth {
 
     async function poll() {
       try {
-        const data = await apiFetch<HealthResponse>("/health");
+        const data = await healthApi.check();
         if (active) {
           setHealth({ state: "online", data, checkedAt: new Date() });
         }

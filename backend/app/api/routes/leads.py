@@ -15,6 +15,7 @@ from app.schemas.leads import (
     MatchedProperty,
     TranscriptMessage,
 )
+from app.schemas.messages import AgentMessageRequest, MessageOut
 from app.schemas.pagination import Page
 from app.services import LeadService
 
@@ -78,3 +79,17 @@ async def update_lead(
 ) -> LeadOut:
     lead = await LeadService(db).update_lead(agent.organization_id, lead_id, payload)
     return LeadOut.model_validate(lead)
+
+
+@router.post("/{lead_id}/messages", response_model=MessageOut, status_code=status.HTTP_201_CREATED)
+async def send_agent_message(
+    lead_id: uuid.UUID,
+    payload: AgentMessageRequest,
+    db: TenantDb,
+    agent: AgentDep,
+) -> MessageOut:
+    """Agent takeover message (dashboard live chat) — stored and delivered."""
+    message = await LeadService(db).record_agent_message(
+        agent.organization_id, lead_id, payload.content
+    )
+    return MessageOut.model_validate(message)

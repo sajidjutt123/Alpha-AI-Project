@@ -15,6 +15,7 @@ from app.models import Lead, LeadPropertyMatch, LeadStatus, Message, Property
 from app.models.enums import MessageChannel, SenderType
 from app.repositories import AgentRepository, LeadRepository, MessageRepository
 from app.schemas.leads import LeadCreate, LeadUpdate
+from app.services.twilio import MessageSender, build_sender
 
 ALLOWED_TRANSITIONS: dict[LeadStatus, frozenset[LeadStatus]] = {
     LeadStatus.NEW: frozenset({LeadStatus.CONTACTED, LeadStatus.QUALIFIED, LeadStatus.LOST}),
@@ -135,19 +136,40 @@ class LeadService:
         return lead
 
     async def record_agent_message(
-        self, organization_id: uuid.UUID, lead_id: uuid.UUID, content: str
-    ) -> Lead:
-        """Agent takeover note from the dashboard (Phase 7 live chat)."""
+        self,
+        organization_id: uuid.UUID,
+        lead_id: uuid.UUID,
+        content: str,
+        *,
+        sender: MessageSender | None = None,
+    ) -> Message:
+        """Agent message from the dashboard (Phase 7 live chat).
+
+        Persists the message (DASHBOARD channel) and ALSO delivers it to the
+        customer on their last conversational channel (WhatsApp/SMS) via the
+        configured sender. Returns the stored message row.
+        """
         lead = await self.get_lead(organization_id, lead_id)
-        await self.messages.add_message(
+        history = list(await self.messages.list_for_lead(lead.id))
+        outbound_channel = MessageChannel.WHATSAPP
+        for message in reversed(history):
+            if message.sender_type == SenderType.CUSTOMER:
+                outbound_channel = MessageChannel(message.channel)
+                break
+
+        sender = sender or build_sender()
+        sid = await sender.send(to=lead.phone, body=content, channel=outbound_channel)
+
+        stored = await self.messages.add_message(
             lead_id=lead.id,
             sender_type=SenderType.AGENT,
             content=content,
             channel=MessageChannel.DASHBOARD,
+            external_message_id=sid,
         )
         if lead.status == LeadStatus.NEW:
             await self.leads.update_fields(lead, status=LeadStatus.CONTACTED)
-        return lead
+        return stored
 
     @staticmethod
     async def _validate_transition(current: LeadStatus, target: LeadStatus) -> None:

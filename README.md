@@ -23,6 +23,15 @@ Lead → WhatsApp/SMS → Twilio → FastAPI + AI pipeline → PostgreSQL (Supab
 | `docs/` | [architecture](docs/architecture.md) · [api](docs/api.md) · [database](docs/database.md) · [deployment](docs/deployment.md) |
 | `.github/workflows/` | CI: lint + type-check + tests for backend & frontend |
 
+## Dashboard (local)
+
+```bash
+# with the stack running (see Quickstart), open http://localhost:3000/login
+# dev sign-in with a seeded agent email, e.g.:
+#   ahmed@alphaestates.pk      (Owner — Alpha Estates, Lahore)
+#   hassan@galaxyproperties.pk (Owner — Galaxy Properties, Karachi)
+```
+
 ## Quickstart (local)
 
 ```bash
@@ -71,6 +80,7 @@ CI runs the same commands on every push/PR (`.github/workflows/ci.yml`).
 | 4 | Twilio webhook pipeline (signature, routing, idempotent ingest, queue seam) | ✅ **done** |
 | 5 | AI engine (intent, extraction, scoring, handoff, telemetry) | ✅ **done** |
 | 6 | Property matching + LangGraph workflow + validated tools | ✅ **done** |
+| 7 | Agent dashboard (auth, KPIs, Kanban, live chat, properties) | ✅ **done** |
 | 4 | Twilio webhook pipeline + seed data | ⬜ |
 | 5 | AI engine (intent, extraction, scoring) | ⬜ |
 | 6 | Property matching + LangGraph workflow | ⬜ |
