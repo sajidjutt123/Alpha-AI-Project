@@ -1,23 +1,30 @@
 """AI agent orchestration (Phases 5/6).
 
-Pipeline (plan §6, implemented in `pipeline.py`): intent detection ->
-information extraction -> lead qualification (deterministic scoring) ->
-[Phase 6: property search tool] -> business rules -> response generation ->
-validation. The LLM never writes to the database directly; it calls
-validated tools implemented by services.
+LangGraph workflow (plan §6 + Day 13), implemented in `graph.py`:
 
-Modules:
-- `llm`        provider abstraction (OpenAI REST + protocol for fakes)
-- `prompts`    versioned prompts (PROMPT_VERSION tracked in ai_runs)
-- `pipeline`   ConversationPipelineAgent — orchestrates analyze/apply/reply
+    START → analyze → apply ─┬─(handoff)→ handoff → END
+                             └─(reply)──→ match → reply → END
+
+- `analyze` (LLM): intent + requirement extraction, Pydantic-validated
+- `apply`: requirements persisted, deterministic qualification scoring
+- `handoff`: HUMAN_AGENT / FRUSTRATED → deterministic human takeover
+- `match`: validated tools (`tools.py`) + deterministic matching service
+- `reply` (LLM): grounded in tool results — never invents listings
+
+The LLM appears only where language is needed. Modules:
+- `llm`          provider abstraction (OpenAI REST + protocol for fakes)
+- `prompts`      versioned prompts (PROMPT_VERSION tracked in ai_runs)
+- `tools`        ToolExecutor — validated choke point for AI tool requests
+- `graph`        the LangGraph workflow + ConversationPipelineAgent
 - `conversation` the ConversationAgent protocol + UnconfiguredAgent fallback
 """
 
 from app.agents.conversation import ConversationAgent, UnconfiguredAgent
-from app.agents.pipeline import (
+from app.agents.graph import (
     HANDOFF_REPLY,
     ConversationPipelineAgent,
     build_conversation_agent,
+    build_conversation_graph,
 )
 
 __all__ = [
@@ -26,4 +33,5 @@ __all__ = [
     "ConversationPipelineAgent",
     "UnconfiguredAgent",
     "build_conversation_agent",
+    "build_conversation_graph",
 ]

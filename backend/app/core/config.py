@@ -72,6 +72,10 @@ class Settings(BaseSettings):
     # Lead scoring classification thresholds (plan: 80/50).
     score_threshold_hot: int = 80
     score_threshold_warm: int = 50
+    # Property matching (Phase 6): minimum score to count as a match, and
+    # how many recommendations to surface per turn.
+    match_score_threshold: int = 50
+    match_recommendation_limit: int = 3
 
     # --- Redis (Phase 8+: queue for async AI processing; optional) -----------
     redis_url: str | None = None

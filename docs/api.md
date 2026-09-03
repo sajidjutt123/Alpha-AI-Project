@@ -82,7 +82,6 @@ LOST     → NEW | CONTACTED          (re-engagement)
 
 | Phase | Group | Endpoints |
 |---|---|---|
-| 6 | AI tools | property search/matching wired into the agent (internal) |
 | 7+ | Realtime | Supabase Realtime channels (no REST) |
 
 ## Webhooks

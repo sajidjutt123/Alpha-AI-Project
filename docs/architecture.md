@@ -101,7 +101,7 @@ the `MessageProcessor` protocol is the swap point for Redis/Arq (Phase 8+)
 the `ConversationAgent` seam (`app/agents/`), which Phase 5 fills with the
 LangGraph pipeline; until then an `UnconfiguredAgent` logs and stays silent.
 
-## AI pipeline (Phase 5 — implemented; Phase 6 adds property tools)
+## AI pipeline (Phases 5+6 — implemented, LangGraph-orchestrated)
 
 ```
 Incoming message (queued job, tenant-bound session)
@@ -114,7 +114,12 @@ Incoming message (queued job, tenant-bound session)
                             weights & thresholds are configuration, never prompt text)
  → business rules          (FRUSTRATED or HUMAN_AGENT → deterministic handoff +
                             SYSTEM note; NEW → CONTACTED on first reply)
- → response generation     (grounded, one question at a time, no invented listings)
+ → property matching       (validated tools: search_properties via ToolExecutor;
+                            deterministic scoring budget 40 / location 25 /
+                            type 15 / bedrooms 20 with affordability + type
+                            gates; matches persisted with reasons)
+ → response generation     (grounded in tool results, one question at a time,
+                            never invents listings; honest no-match fallback)
  → validation              (length-bounded, schema-checked)
  → persist + send          (requirement updates, score, ai_runs telemetry per call)
 ```

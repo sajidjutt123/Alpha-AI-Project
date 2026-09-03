@@ -17,7 +17,8 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.agents.pipeline import HANDOFF_REPLY, ConversationPipelineAgent
+from app.agents.graph import HANDOFF_REPLY, ConversationPipelineAgent
+from app.agents.prompts import PROMPT_VERSION
 from app.core.database import with_tenant
 from app.models import AIRun, Lead, Message
 from app.models.enums import (
@@ -337,8 +338,8 @@ class TestTelemetry:
             models = {r.model for r in runs}
             await db_session.rollback()
         assert by_stage == {
-            "v1:analysis": (111, 22),
-            "v1:reply": (333, 44),
+            f"{PROMPT_VERSION}:analysis": (111, 22),
+            f"{PROMPT_VERSION}:reply": (333, 44),
         }
         assert models == {"scripted-test-model"}
 

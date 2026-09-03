@@ -48,7 +48,7 @@ class InlineMessageProcessor:
     ) -> None:
         # Real pipeline when an LLM is configured; otherwise the silent
         # UnconfiguredAgent keeps the webhook flow intact and honest.
-        from app.agents.pipeline import build_conversation_agent
+        from app.agents.graph import build_conversation_agent
 
         self.agent: ConversationAgent = agent or build_conversation_agent() or UnconfiguredAgent()
         self.sender: MessageSender = sender or build_sender()

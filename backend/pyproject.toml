@@ -37,6 +37,10 @@ disallow_untyped_decorators = false
 module = "asyncpg.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["langgraph.*", "langchain_core.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
@@ -46,5 +50,6 @@ filterwarnings = [
     "error",
     # Third-party deprecation noise we do not own:
     "ignore:The anyio.abc.BlockingPortal alias is deprecated",
+    "ignore::langchain_core._api.deprecation.LangChainPendingDeprecationWarning",
     "ignore:Using `httpx` with `starlette.testclient` is deprecated",
 ]

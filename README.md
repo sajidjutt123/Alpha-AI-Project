@@ -70,6 +70,7 @@ CI runs the same commands on every push/PR (`.github/workflows/ci.yml`).
 | 3 | FastAPI core APIs (auth middleware, leads/properties/agents/analytics) | ✅ **done** |
 | 4 | Twilio webhook pipeline (signature, routing, idempotent ingest, queue seam) | ✅ **done** |
 | 5 | AI engine (intent, extraction, scoring, handoff, telemetry) | ✅ **done** |
+| 6 | Property matching + LangGraph workflow + validated tools | ✅ **done** |
 | 4 | Twilio webhook pipeline + seed data | ⬜ |
 | 5 | AI engine (intent, extraction, scoring) | ⬜ |
 | 6 | Property matching + LangGraph workflow | ⬜ |
