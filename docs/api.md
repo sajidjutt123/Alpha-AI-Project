@@ -85,11 +85,38 @@ LOST     → NEW | CONTACTED          (re-engagement)
 |---|---|---|
 | GET | `/analytics/overview` | totals, by-status, hot/warm/cold (80/50 thresholds), conversion rate, avg score, new-7d, property count |
 
-### Planned by phase
+### Realtime (Phase 8)
 
-| Phase | Group | Endpoints |
+| Method | Path | Description |
 |---|---|---|
-| 7+ | Realtime | Supabase Realtime channels (no REST) |
+| GET | `/realtime/stream` | Server-Sent Events, bearer-authenticated, org-scoped. Emits `: connected`, then `event: <type>` + `data: <json>` frames, with a `: ping` comment every 15s as keepalive. Drops events for slow clients (queue cap 256) instead of stalling the request path. |
+
+Event types and payloads:
+
+```
+lead.created         {lead_id, name, phone}
+message.created      {lead_id, message_id, sender_type, preview}   # preview ≤80 chars
+lead.updated         {lead_id, qualification_score, status}
+handoff.requested    {lead_id}
+notification.created {id, type, title, body, lead_id}
+```
+
+Notes: EventSource cannot send `Authorization` headers, so the dashboard
+uses a `fetch`-based stream reader (`frontend/lib/realtime.ts`) — no token
+in query strings. Events are published only after the originating
+transaction commits (deferred publish/flush), so clients never see data
+that rolled back.
+
+### Notifications (Phase 8)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/notifications` | 30 most recent for the organization; each item carries a computed `read` flag for the calling agent, plus `unread_count` |
+| POST | `/notifications/read-all` | Appends the caller to every notification's `read_by` → `{marked}` |
+
+Types: `NEW_LEAD` (first inbound message from an unknown number),
+`HOT_LEAD` (score crossed the HOT threshold), `HANDOFF` (human takeover
+requested). Tenant-scoped under RLS like every other table.
 
 ## Webhooks
 

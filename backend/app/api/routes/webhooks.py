@@ -31,9 +31,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.database import get_db, with_tenant
 from app.core.errors import NotFoundError
+from app.core.events import defer_publish, flush_deferred
 from app.core.twilio_security import validate_signature
 from app.models.enums import MessageChannel, SenderType
 from app.repositories import LeadRepository, MessageRepository
+from app.services.notifications import NEW_LEAD, NotificationService
 from app.workers.messaging import InboundMessageJob
 
 logger = logging.getLogger(__name__)
@@ -130,7 +132,7 @@ async def twilio_webhook(
     # --- 4. Persist + enqueue (single tenant transaction) --------------------
     async with with_tenant(db, organization_id):
         leads = LeadRepository(db)
-        lead, _created = await leads.get_or_create_by_phone(
+        lead, created = await leads.get_or_create_by_phone(
             organization_id=organization_id,
             phone=phone,
             name=form.get("ProfileName") or None,
@@ -147,6 +149,33 @@ async def twilio_webhook(
             channel=channel,
             external_message_id=message_sid,
         )
+        if created:
+            await NotificationService(db).create(
+                organization_id=organization_id,
+                type=NEW_LEAD,
+                title=f"New lead: {lead.name or lead.phone}",
+                body=f"First message via {channel.value}: {body[:80]}",
+                lead_id=lead.id,
+            )
+            defer_publish(
+                db,
+                organization_id,
+                "lead.created",
+                {"lead_id": str(lead.id), "name": lead.name, "phone": lead.phone},
+            )
+        defer_publish(
+            db,
+            organization_id,
+            "message.created",
+            {
+                "lead_id": str(lead.id),
+                "message_id": str(message.id),
+                "sender_type": "CUSTOMER",
+                "preview": body[:80],
+            },
+        )
+    # transaction committed — now fan realtime events out
+    flush_deferred(db)
 
     # --- 5. Ack fast; AI runs after the response is sent ---------------------
     job = InboundMessageJob(

@@ -15,6 +15,8 @@ import type {
   Lead,
   LeadDetail,
   LeadUpdate,
+  MarkReadResponse,
+  NotificationList,
   Page,
   Property,
   Session,
@@ -145,4 +147,11 @@ export const propertiesApi = {
 
 export const analyticsApi = {
   overview: () => apiFetch<AnalyticsOverview>("/analytics/overview"),
+};
+
+// --- Notifications (Phase 8 realtime) ----------------------------------------------------
+
+export const notificationsApi = {
+  list: () => apiFetch<NotificationList>("/notifications"),
+  markAllRead: () => apiFetch<MarkReadResponse>("/notifications/read-all", { method: "POST" }),
 };

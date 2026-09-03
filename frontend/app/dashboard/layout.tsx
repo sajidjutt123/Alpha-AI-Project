@@ -8,6 +8,9 @@ import { useEffect } from "react";
 import { Building2, KanbanSquare, LayoutDashboard, LogOut, Users } from "lucide-react";
 
 import { useSession } from "@/features/auth/session";
+import { NotificationBell } from "@/features/notifications/notification-bell";
+import { ToastProvider } from "@/features/notifications/toast-provider";
+import { RealtimeProvider, useRealtime } from "@/features/realtime/realtime-provider";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -15,6 +18,29 @@ const NAV = [
   { href: "/dashboard/leads", label: "Leads & Pipeline", icon: Users },
   { href: "/dashboard/properties", label: "Properties", icon: Building2 },
 ];
+
+/** Live-connection pill fed by the SSE stream state. */
+function LiveBadge() {
+  const { connection } = useRealtime();
+  const map = {
+    live: { label: "Live", dot: "bg-emerald-500", cls: "border-emerald-500/30 text-emerald-400" },
+    connecting: { label: "Connecting", dot: "bg-amber-500 animate-pulse", cls: "border-amber-500/30 text-amber-400" },
+    reconnecting: { label: "Reconnecting", dot: "bg-amber-500 animate-pulse", cls: "border-amber-500/30 text-amber-400" },
+    offline: { label: "Offline", dot: "bg-muted-foreground", cls: "border-border text-muted-foreground" },
+  } as const;
+  const state = map[connection];
+  return (
+    <span
+      className={cn(
+        "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+        state.cls,
+      )}
+    >
+      <span className={cn("size-1.5 rounded-full", state.dot)} />
+      {state.label}
+    </span>
+  );
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { status, agent, logout } = useSession();
@@ -34,7 +60,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen">
+    <ToastProvider>
+      <RealtimeProvider>
+        <div className="flex min-h-screen">
       <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card/40 p-4 md:flex">
         <Link href="/" className="mb-8 flex items-center gap-2.5 px-2">
           <div className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-base font-black text-background">
@@ -91,18 +119,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="flex items-center gap-3 border-b border-border px-4 py-3 md:hidden">
           <KanbanSquare className="size-5 text-primary" />
           <span className="text-sm font-semibold">Alpha AI</span>
+          <div className="ml-auto flex items-center gap-2">
+            <LiveBadge />
+            <NotificationBell />
+          </div>
           <button
             onClick={() => {
               logout();
               router.push("/login");
             }}
-            className="ml-auto text-xs text-muted-foreground"
+            className="text-xs text-muted-foreground"
           >
             sign out
           </button>
         </header>
+        <div className="hidden items-center justify-end gap-3 border-b border-border px-8 py-2.5 md:flex">
+          <LiveBadge />
+          <NotificationBell />
+        </div>
         <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
       </div>
     </div>
+      </RealtimeProvider>
+    </ToastProvider>
   );
 }

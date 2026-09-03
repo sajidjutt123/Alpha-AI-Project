@@ -7,8 +7,9 @@
  */
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useRealtimeEvent } from "@/features/realtime/realtime-provider";
 import { leadsApi } from "@/lib/api";
 import type { Lead, LeadStatus } from "@/types/api";
 import { LEAD_STATUSES, ScoreBar, temperature } from "@/components/dash/ui";
@@ -22,6 +23,20 @@ export function KanbanBoard() {
   const [tick, setTick] = useState(0);
 
   const refresh = useCallback(() => setTick((current) => current + 1), []);
+
+  // Realtime board updates (Phase 8): new leads and AI-driven status/score
+  // changes arrive over SSE; coalesce bursts (multi-event webhook runs) into
+  // one refetch after a short debounce.
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const refreshSoon = useCallback(() => {
+    if (debounce.current) clearTimeout(debounce.current);
+    debounce.current = setTimeout(() => refresh(), 400);
+  }, [refresh]);
+  useEffect(() => () => {
+    if (debounce.current) clearTimeout(debounce.current);
+  }, []);
+  useRealtimeEvent("lead.created", refreshSoon);
+  useRealtimeEvent("lead.updated", refreshSoon);
 
   useEffect(() => {
     let active = true;

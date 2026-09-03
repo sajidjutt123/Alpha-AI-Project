@@ -12,6 +12,7 @@ from app.repositories.analytics import AnalyticsRepository
 from app.repositories.base import BaseRepository
 from app.repositories.leads import LeadRepository
 from app.repositories.messages import MessageRepository
+from app.repositories.notifications import NotificationRepository
 from app.repositories.organizations import OrganizationRepository
 from app.repositories.properties import PropertyRepository
 
@@ -22,6 +23,7 @@ __all__ = [
     "BaseRepository",
     "LeadRepository",
     "MessageRepository",
+    "NotificationRepository",
     "OrganizationRepository",
     "PropertyRepository",
 ]

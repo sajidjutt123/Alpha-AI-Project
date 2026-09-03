@@ -129,6 +129,62 @@ webhook already acked; a human or retry picks the thread up. Prompt
 injections are treated as data (guard text in every prompt; the scorer only
 reads structured facts). See `backend/app/agents/`.
 
+## Realtime & notifications (Phase 8 — implemented)
+
+```
+Domain code ──defer_publish(session, org, type, payload)──▶ session.info["deferred_events"]
+        │                                                      (survives the transaction;
+        │                                                       publishes only on success)
+        ▼
+  commit → flush_deferred(session) ──▶ EventBus.publish(org_id, …)
+                                           │
+   per-org subscriber set: Set[asyncio.Queue]  (MAX_QUEUE=256 — drop-if-full,
+   a slow SSE client can never stall a request path; KEEPALIVE=15s)
+                                           │
+                                           ▼
+   GET /api/v1/realtime/stream  (SSE;  org-scoped fan-out per event)
+```
+
+**Event contract** (org-scoped; all payloads JSON):
+
+| Event | Emitted when | Payload |
+|---|---|---|
+| `lead.created` | webhook creates a lead by phone | `lead_id, name, phone` |
+| `message.created` | any message row appears (customer / AI / agent) | `lead_id, message_id, sender_type, preview≤80` |
+| `lead.updated` | graph updated score/status/requirements | `lead_id, qualification_score, status` |
+| `handoff.requested` | rules triggered human takeover | `lead_id` |
+| `notification.created` | a persistent notification was written | `id, type, title, body, lead_id` |
+
+**Notifications** are persistent rows (migration `006`), not just stream
+events: org-scoped, typed (`NEW_LEAD` / `HOT_LEAD` / `HANDOFF`), with a
+`read_by uuid[]` array giving per-agent read state without a join table
+(`GET /notifications` computes `read`, `POST /notifications/read-all`
+appends the caller).
+
+**SSE over EventSource, deliberately.** The stream endpoint resolves the
+caller's agent, then **rolls the pooled DB session back before returning the
+`StreamingResponse`** — the generator never holds a connection. It is plain
+SSE (not WebSockets) because the dashboard only needs server→client push;
+the browser client is a `fetch` + `ReadableStream` reader rather than
+`EventSource`, because EventSource cannot send the `Authorization: Bearer`
+header and a `?token=` query param would leak the JWT into proxy logs.
+
+**Multi-instance swap (documented, not needed for the MVP).** The
+`EventBus` is in-process, so events reach only clients connected to the
+instance that handled the request. When the API scales horizontally,
+`EventBus.publish` becomes a `PUBLISH` to a Redis channel per organization
+and `sse_generator` subscribes via `redis.asyncio` pub/sub — the publish
+call sites, event contract, and client are unchanged. The deferred
+publish/flush pattern already guarantees no event is emitted for a
+transaction that rolled back.
+
+Frontend wiring: one SSE connection per session
+(`features/realtime/realtime-provider.tsx`) with capped exponential-backoff
+reconnect; `useRealtimeEvent(type, handler)` fans out to the kanban board
+(`lead.created`/`lead.updated` → debounced refetch), the transcript
+(`message.created` for the open lead → live append), and the notification
+bell (badge + toast + browser notification when the tab is hidden).
+
 ## Security model (implemented progressively; audited in Phase 9)
 
 - Supabase Auth for dashboard users; RLS for organization-level isolation

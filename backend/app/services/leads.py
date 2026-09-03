@@ -11,6 +11,7 @@ from collections.abc import Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import BusinessRuleError, ConflictError, NotFoundError
+from app.core.events import defer_publish
 from app.models import Lead, LeadPropertyMatch, LeadStatus, Message, Property
 from app.models.enums import MessageChannel, SenderType
 from app.repositories import AgentRepository, LeadRepository, MessageRepository
@@ -166,6 +167,17 @@ class LeadService:
             content=content,
             channel=MessageChannel.DASHBOARD,
             external_message_id=sid,
+        )
+        defer_publish(
+            self.session,
+            organization_id,
+            "message.created",
+            {
+                "lead_id": str(lead.id),
+                "message_id": str(stored.id),
+                "sender_type": "AGENT",
+                "preview": content[:80],
+            },
         )
         if lead.status == LeadStatus.NEW:
             await self.leads.update_fields(lead, status=LeadStatus.CONTACTED)

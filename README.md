@@ -32,6 +32,14 @@ Lead → WhatsApp/SMS → Twilio → FastAPI + AI pipeline → PostgreSQL (Supab
 #   hassan@galaxyproperties.pk (Owner — Galaxy Properties, Karachi)
 ```
 
+Realtime (Phase 8): once signed in, the dashboard keeps one SSE connection
+open (`GET /api/v1/realtime/stream`). New leads land on the Kanban board
+and a toast/badge fires without a refresh; an open conversation streams
+inbound replies and AI responses live; the bell dropdown lists the latest
+30 notifications with per-agent unread state. To see it in action: open the
+dashboard, then post a Twilio webhook (or run the backend webhook tests'
+`inbound_form` shape) and watch the events arrive.
+
 ## Quickstart (local)
 
 ```bash
@@ -81,12 +89,8 @@ CI runs the same commands on every push/PR (`.github/workflows/ci.yml`).
 | 5 | AI engine (intent, extraction, scoring, handoff, telemetry) | ✅ **done** |
 | 6 | Property matching + LangGraph workflow + validated tools | ✅ **done** |
 | 7 | Agent dashboard (auth, KPIs, Kanban, live chat, properties) | ✅ **done** |
-| 4 | Twilio webhook pipeline + seed data | ⬜ |
-| 5 | AI engine (intent, extraction, scoring) | ⬜ |
-| 6 | Property matching + LangGraph workflow | ⬜ |
-| 7 | Agent dashboard (Kanban, conversations) | ⬜ |
-| 8 | Realtime & notifications | ⬜ |
-| 9 | Testing + security audit | ⬜ |
+| 8 | Realtime & notifications (SSE event bus, live board/transcript, bell + toasts) | ✅ **done** |
+| 9 | Testing + security audit | ⬜ up next |
 | 10 | Deployment (Vercel + Railway/Render + Supabase) | ⬜ |
 | 11 | Demo + sales package | ⬜ |
 

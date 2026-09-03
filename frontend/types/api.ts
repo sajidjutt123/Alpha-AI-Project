@@ -165,3 +165,27 @@ export interface AgentMessage {
   external_message_id: string | null;
   created_at: string;
 }
+
+// --- Notifications (Phase 8 realtime) ---------------------------------------------------
+
+export type NotificationType = "NEW_LEAD" | "HOT_LEAD" | "HANDOFF";
+
+export interface NotificationItem {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  lead_id: string | null;
+  /** Computed per agent server-side (read_by array membership). */
+  read: boolean;
+  created_at: string;
+}
+
+export interface NotificationList {
+  items: NotificationItem[];
+  unread_count: number;
+}
+
+export interface MarkReadResponse {
+  marked: number;
+}

@@ -2,9 +2,10 @@
 
 /** Conversation transcript + agent takeover composer (live chat). */
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Bot, MessageSquare, Send, User } from "lucide-react";
 
+import { useRealtimeEvent } from "@/features/realtime/realtime-provider";
 import { leadsApi } from "@/lib/api";
 import type { AgentMessage, TranscriptMessage } from "@/types/api";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,31 @@ export function Transcript({
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Live streaming (Phase 8): inbound WhatsApp/SMS replies and AI responses
+  // for THIS lead append to the transcript in real time via SSE.
+  const onMessageCreated = useCallback(
+    (payload: Record<string, unknown>) => {
+      if (String(payload.lead_id ?? "") !== leadId) return;
+      setMessages((current) => {
+        if (current.some((message) => message.id === String(payload.message_id))) {
+          return current; // own agent sends are already appended locally
+        }
+        return [
+          ...current,
+          {
+            id: String(payload.message_id),
+            sender_type: (payload.sender_type as TranscriptMessage["sender_type"]) ?? "SYSTEM",
+            content: String(payload.preview ?? ""),
+            channel: "WHATSAPP",
+            created_at: new Date().toISOString(),
+          },
+        ];
+      });
+    },
+    [leadId],
+  );
+  useRealtimeEvent("message.created", onMessageCreated);
 
   async function send(event: React.FormEvent) {
     event.preventDefault();

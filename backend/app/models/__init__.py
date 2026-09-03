@@ -19,6 +19,7 @@ from app.models.enums import (
 from app.models.lead import Lead
 from app.models.lead_property_match import LeadPropertyMatch
 from app.models.message import Message
+from app.models.notification import Notification
 from app.models.organization import Organization
 from app.models.property import Property
 
@@ -33,6 +34,7 @@ __all__ = [
     "LeadStatus",
     "Message",
     "MessageChannel",
+    "Notification",
     "Organization",
     "Property",
     "PropertyAvailability",

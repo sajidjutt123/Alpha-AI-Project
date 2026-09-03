@@ -10,6 +10,8 @@ features/
   conversations/  live chat transcript, AI status, takeover controls
   analytics/      KPI cards and charts
   auth/           login flow, session helpers
+  realtime/       SSE connection provider + useRealtimeEvent hook (Phase 8)
+  notifications/  notification bell, toasts, unread badge (Phase 8)
 ```
 
 Convention per module:

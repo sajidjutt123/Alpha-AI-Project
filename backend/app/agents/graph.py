@@ -28,12 +28,14 @@ from app.agents.prompts import (
 )
 from app.agents.tools import ToolError, ToolExecutor
 from app.core.config import get_settings
+from app.core.events import defer_publish
 from app.models import Lead, Message
 from app.models.enums import LeadIntent, LeadStatus, MessageChannel, SenderType
 from app.repositories import AIRunRepository, LeadRepository, MessageRepository
 from app.schemas.ai import ConversationAnalysis, Sentiment
 from app.services.matching import MatchingService
-from app.services.scoring import ScoringService
+from app.services.notifications import HOT_LEAD, NotificationService
+from app.services.scoring import ScoringService, Temperature
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +103,7 @@ def build_conversation_graph(
         analysis: ConversationAnalysis = state["analysis"]
 
         customer_messages = sum(1 for m in history if m.sender_type == SenderType.CUSTOMER)
+        previous_score = lead.qualification_score
         # Apply extracted facts first, then score the UPDATED lead.
         await leads.update_fields(
             lead,
@@ -114,6 +117,27 @@ def build_conversation_graph(
         )
         breakdown = scoring.score(lead, customer_messages)
         lead.qualification_score = breakdown.total
+        hot = settings.score_threshold_hot
+        if breakdown.temperature is Temperature.HOT and (
+            previous_score is None or previous_score < hot
+        ):
+            await NotificationService(session).create(
+                organization_id=lead.organization_id,
+                type=HOT_LEAD,
+                title=f"Hot lead: {lead.name or lead.phone} ({breakdown.total}/100)",
+                body="Crossed the hot threshold — worth a call right now.",
+                lead_id=lead.id,
+            )
+        defer_publish(
+            session,
+            lead.organization_id,
+            "lead.updated",
+            {
+                "lead_id": str(lead.id),
+                "qualification_score": breakdown.total,
+                "status": lead.status.value,
+            },
+        )
         logger.info(
             "lead_scored",
             extra={
@@ -139,6 +163,12 @@ def build_conversation_graph(
             content=f"AI handed off to a human agent (intent={analysis.intent.value}, "
             f"sentiment={analysis.sentiment.value})",
             channel=MessageChannel.DASHBOARD,
+        )
+        defer_publish(
+            session,
+            lead.organization_id,
+            "handoff.requested",
+            {"lead_id": str(lead.id)},
         )
         _mark_contacted(lead)
         return {"reply": HANDOFF_REPLY}

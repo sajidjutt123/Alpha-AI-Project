@@ -18,6 +18,7 @@ from pydantic import BaseModel
 
 from app.agents.conversation import ConversationAgent, UnconfiguredAgent
 from app.core.database import get_session_factory, with_tenant
+from app.core.events import defer_publish, flush_deferred
 from app.models import Message
 from app.models.enums import MessageChannel, SenderType
 from app.repositories import LeadRepository, MessageRepository
@@ -67,13 +68,26 @@ class InlineMessageProcessor:
                 return
             channel = _reply_channel(history)
             sid = await self.sender.send(to=lead.phone, body=reply, channel=channel)
-            await messages.add_message(
+            ai_message = await messages.add_message(
                 lead_id=lead.id,
                 sender_type=SenderType.AI,
                 content=reply,
                 channel=channel,
                 external_message_id=sid,
             )
+            defer_publish(
+                session,
+                job.organization_id,
+                "message.created",
+                {
+                    "lead_id": str(lead.id),
+                    "message_id": str(ai_message.id),
+                    "sender_type": "AI",
+                    "preview": reply[:80],
+                },
+            )
+        # transaction committed — fan realtime events out
+        flush_deferred(session)
 
 
 def _reply_channel(history: Sequence[Message]) -> MessageChannel:

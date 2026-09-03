@@ -7,9 +7,9 @@ const PHASES = [
   { id: 4, name: "Twilio Webhook Pipeline", status: "done" },
   { id: 5, name: "AI Engine", status: "done" },
   { id: 6, name: "Property Matching", status: "done" },
-  { id: 7, name: "Agent Dashboard", status: "next" },
-  { id: 8, name: "Realtime & Notifications", status: "todo" },
-  { id: 9, name: "Testing & Security Audit", status: "todo" },
+  { id: 7, name: "Agent Dashboard", status: "done" },
+  { id: 8, name: "Realtime & Notifications", status: "done" },
+  { id: 9, name: "Testing & Security Audit", status: "next" },
   { id: 10, name: "Deployment", status: "todo" },
   { id: 11, name: "Demo & Sales Package", status: "todo" },
 ] as const;
@@ -108,7 +108,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-auto border-t border-border pt-6 text-xs text-muted-foreground">
-        Alpha AI · Phases 1–6 complete ·{" "}
+        Alpha AI · Phases 1–8 complete ·{" "}
         <a href="/login" className="text-primary underline underline-offset-2">
           Agent sign-in
         </a>{" "}

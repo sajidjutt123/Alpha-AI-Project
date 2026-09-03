@@ -13,6 +13,7 @@ from app.schemas.leads import (
     TranscriptMessage,
 )
 from app.schemas.messages import AgentMessageRequest, MessageOut
+from app.schemas.notifications import NotificationList, NotificationOut
 from app.schemas.pagination import Page
 from app.schemas.properties import PropertyCreate, PropertyOut
 
@@ -29,6 +30,8 @@ __all__ = [
     "MatchedProperty",
     "MeOut",
     "MessageOut",
+    "NotificationList",
+    "NotificationOut",
     "Page",
     "PropertyCreate",
     "PropertyOut",
