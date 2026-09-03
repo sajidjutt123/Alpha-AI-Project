@@ -33,7 +33,8 @@ services:
       - .env
     environment:
       # Inside the compose network the DB host is `db`, not localhost.
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-alpha}:${POSTGRES_PASSWORD:-alpha}@db:5432/${POSTGRES_DB:-alpha_ai}
+      # Runtime uses the RLS-bound least-privilege role (created by migrations).
+      DATABASE_URL: postgresql+asyncpg://alpha_app:${APP_DB_PASSWORD:-alpha_app}@db:5432/${POSTGRES_DB:-alpha_ai}
     ports:
       - "8000:8000"
     depends_on:

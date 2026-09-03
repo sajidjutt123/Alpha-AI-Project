@@ -1,5 +1,10 @@
--- Alpha AI — database schema
--- Multi-tenant PostgreSQL schema (Supabase-compatible).
+-- Alpha AI — canonical database schema
 --
--- Full DDL, enums, indexes, and RLS policies are delivered in Phase 2.
--- This file will hold the canonical schema; migrations in ./migrations/.
+-- The source of truth for DDL lives in versioned migrations:
+--     database/migrations/001_initial_schema.sql   (enums, tables, triggers, indexes)
+--     database/migrations/002_rls_roles.sql        (runtime role, grants, RLS policies)
+--
+-- Do NOT apply this file directly — run migrations instead (they are tracked):
+--     python -m app.db.migrate        # from backend/, with ADMIN_DATABASE_URL set
+--
+-- See docs/database.md for the data model documentation.

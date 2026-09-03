@@ -82,6 +82,15 @@ The browser calls relative paths (`/api/backend/...`); the Next.js server
 rewrites them to the FastAPI service. No CORS exposure of the API, and the
 backend URL stays server-side (`BACKEND_INTERNAL_URL`).
 
+### D7 — Tenant isolation is a database guarantee, not an application promise
+The backend connects to PostgreSQL as a least-privilege role (`alpha_app`,
+no BYPASSRLS) against tables with ENABLE + FORCE ROW LEVEL SECURITY. Each
+request binds a transaction-local tenant context
+(`app.current_organization_id`); RLS policies then confine every query to
+one `organization_id`. Even buggy application code cannot mix tenants, and
+pooled connections cannot leak tenant state. Migrations run separately as
+the owner role. Details: [database.md](database.md).
+
 ## AI pipeline (Phase 5–6 target)
 
 ```

@@ -36,7 +36,12 @@ class Settings(BaseSettings):
     allowed_origins: list[str] = ["http://localhost:3000"]
 
     # --- Database (Phase 2: Supabase / local Postgres) -----------------------
-    database_url: str = "postgresql+asyncpg://alpha:alpha@localhost:5432/alpha_ai"
+    # Runtime role (`alpha_app`, least privilege, subject to RLS).
+    database_url: str = "postgresql+asyncpg://alpha_app:alpha_app@localhost:5432/alpha_ai"
+    # Admin role (owner/superuser) — migrations and seeding only.
+    admin_database_url: str | None = None
+    # Password interpolated into the alpha_app role DDL by the migration runner.
+    app_db_password: str = "alpha_app"
 
     supabase_url: str | None = None
     supabase_anon_key: str | None = None

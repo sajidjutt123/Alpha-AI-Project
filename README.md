@@ -28,24 +28,26 @@ Lead → WhatsApp/SMS → Twilio → FastAPI + AI pipeline → PostgreSQL (Supab
 ```bash
 cp .env.example .env
 
-# 1) Database + backend (Docker)
-docker compose up -d            # API → http://localhost:8000/api/v1/docs
-
-# 2) Frontend (or run it yourself — see below)
-cd frontend
-cp .env.example .env.local
-npm install
-npm run dev                     # → http://localhost:3000
-```
-
-Run the backend without Docker:
-
-```bash
+# 1) Database (Postgres 16) + apply migrations & seed
+docker compose up -d db
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
-uvicorn app.main:app --reload   # → http://localhost:8000/api/v1/docs
+export ADMIN_DATABASE_URL=postgresql://alpha:alpha@localhost:5432/alpha_ai
+python -m app.db.migrate --seed
+
+# 2) Backend API
+uvicorn app.main:app --reload    # → http://localhost:8000/api/v1/docs
+
+# 3) Frontend
+cd ../frontend
+cp .env.example .env.local
+npm install
+npm run dev                      # → http://localhost:3000
 ```
+
+Everything also runs without Docker: with no `TEST_DATABASE_URL` set, the
+test suite auto-provisions an embedded PostgreSQL (via `pgserver`).
 
 ## Development commands
 
@@ -64,7 +66,7 @@ CI runs the same commands on every push/PR (`.github/workflows/ci.yml`).
 | # | Phase | Status |
 |---|---|---|
 | 1 | Architecture & scaffolding | ✅ **done** |
-| 2 | Database + Auth (Supabase, RLS, multi-tenant) | ⬜ |
+| 2 | Database + Auth (schema, RLS multi-tenant, migrations, seed) | ✅ **done** |
 | 3 | FastAPI core APIs (leads, properties, agents) | ⬜ |
 | 4 | Twilio webhook pipeline + seed data | ⬜ |
 | 5 | AI engine (intent, extraction, scoring) | ⬜ |
