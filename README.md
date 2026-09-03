@@ -53,6 +53,24 @@ cd frontend && npm test
 Security posture and the full audit (findings, fixes, accepted risks,
 dependency remediation) live in [docs/security-audit.md](docs/security-audit.md).
 
+## Deploying (Phase 10)
+
+```bash
+# self-hosted, one host — db → migrations → API → dashboard (health-gated)
+cp .env.example .env   # fill in real values
+docker compose -f docker-compose.prod.yml up -d --build
+
+# or the managed path: Vercel (frontend) + Railway/Render (backend Docker)
+# + Supabase (Postgres + Auth) — step-by-step runbook:
+open docs/deployment.md
+```
+
+Cloud artifacts in-repo: `backend/Dockerfile` (root context, migrations
+inside), `frontend/Dockerfile` (standalone), `docker-compose.prod.yml`,
+`render.yaml`, `railway.json`, `vercel.json`, and the first-org CLI
+`python -m app.db.bootstrap_org`. Supabase Auth tokens verify via JWKS
+(RS256/ES256) or the legacy HS256 secret.
+
 ## Quickstart (local)
 
 ```bash
@@ -104,8 +122,8 @@ CI runs the same commands on every push/PR (`.github/workflows/ci.yml`).
 | 7 | Agent dashboard (auth, KPIs, Kanban, live chat, properties) | ✅ **done** |
 | 8 | Realtime & notifications (SSE event bus, live board/transcript, bell + toasts) | ✅ **done** |
 | 9 | Testing + security audit (96% coverage, rate limiting, headers, CVE remediation) | ✅ **done** |
-| 10 | Deployment (Vercel + Railway/Render + Supabase) | ⬜ |
-| 11 | Demo + sales package | ⬜ |
+| 10 | Deployment (Docker images, compose stack, Render/Railway/Vercel configs, Supabase JWKS auth, go-live runbook) | ✅ **done** |
+| 11 | Demo + sales package | ⬜ up next |
 
 ## Core principles
 

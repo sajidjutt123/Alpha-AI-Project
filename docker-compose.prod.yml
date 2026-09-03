@@ -1,0 +1,82 @@
+# Alpha AI — single-node production stack (Phase 10).
+#
+# Everything on one host with Docker. For cloud deploys (Vercel +
+# Railway/Render + Supabase) follow docs/deployment.md instead — this file
+# is the self-hosted / VPS path and the local dress rehearsal for it.
+#
+#   cp .env.example .env                     # fill in real values
+#   docker compose -f docker-compose.prod.yml up -d --build
+#   docker compose -f docker-compose.prod.yml logs -f migrate   # one-shot
+#
+# The `migrate` service applies SQL migrations and exits before the API
+# starts (health-gated). Frontend proxies /api/backend/* to the API.
+
+name: alpha-ai-prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-alpha}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-alpha_ai}
+    volumes:
+      - pgdata-prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-alpha} -d ${POSTGRES_DB:-alpha_ai}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    # Not published to the host by default — reach it via the compose
+    # network, or `docker compose exec db psql` for administration.
+
+  migrate:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: "no"
+    environment:
+      # Owner connection — migrations create the RLS-bound app role.
+      ADMIN_DATABASE_URL: postgresql://${POSTGRES_USER:-alpha}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-alpha_ai}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+      MIGRATIONS_DIR: /app/database/migrations
+    command: ["python", "-m", "app.db.migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://alpha_app:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-alpha_ai}
+      # Behind the compose network's proxy chain? Not here — direct exposure:
+      # rate limiting falls back to the socket peer, which IS the real client.
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  pgdata-prod:

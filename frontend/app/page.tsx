@@ -10,8 +10,8 @@ const PHASES = [
   { id: 7, name: "Agent Dashboard", status: "done" },
   { id: 8, name: "Realtime & Notifications", status: "done" },
   { id: 9, name: "Testing & Security Audit", status: "done" },
-  { id: 10, name: "Deployment", status: "next" },
-  { id: 11, name: "Demo & Sales Package", status: "todo" },
+  { id: 10, name: "Deployment", status: "done" },
+  { id: 11, name: "Demo & Sales Package", status: "next" },
 ] as const;
 
 const STACK = [
@@ -79,7 +79,7 @@ export default function Home() {
                 <span className="font-mono text-xs opacity-70">
                   {String(phase.id).padStart(2, "0")}
                 </span>
-                <span className={phase.status === "todo" ? "" : "font-medium"}>
+                <span className={phase.status === "done" ? "font-medium" : ""}>
                   {phase.name}
                 </span>
               </span>
@@ -108,7 +108,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-auto border-t border-border pt-6 text-xs text-muted-foreground">
-        Alpha AI · Phases 1–9 complete ·{" "}
+        Alpha AI · Phases 1–10 complete ·{" "}
         <a href="/login" className="text-primary underline underline-offset-2">
           Agent sign-in
         </a>{" "}

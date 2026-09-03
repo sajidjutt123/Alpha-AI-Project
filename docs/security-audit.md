@@ -56,7 +56,7 @@ Dependency findings remediated in the same pass (all post-compromise vectors, no
 | # | Risk | Rationale | When |
 |---|---|---|---|
 | R1 | Rate limiter & event bus are in-process | Single-instance MVP by design; horizontally scaled deployments under-count per node (each node still throttles locally). Redis (`INCR`+`EXPIRE` / pub-sub) is the drop-in swap behind unchanged interfaces. | Phase 10, if scaling |
-| R2 | `alg` HS256 shared-secret JWTs (Supabase legacy secret) | Supabase Auth verification seam is one module (`app/core/auth.py`); RS256/JWKS is a config-era change, no app code. | Phase 10 |
+| R2 | ~~`alg` HS256 shared-secret JWTs (Supabase legacy secret)~~ | **Resolved in Phase 10**: `app/core/auth.py` now verifies Supabase JWKS (RS256/ES256, keyset cached, per-strategy algorithm pinning) with the HS256 secret as fallback; test-pinned against algorithm-confusion and wrong-key forgeries (`tests/test_auth_strategies.py`). | Closed |
 | R3 | Chunked request bodies without `Content-Length` bypass F4's declared-length check | Twilio always sends a length; reverse proxies (Railway/Render/Vercel) enforce their own caps. | Accepted |
 | R4 | `agents/llm.py` 61% / `db/migrate.py` 54% coverage | Live-OpenAI error paths (behind the `ScriptedLLM` seam) and the CLI migration runner (executed in every test-session bootstrap, unmeasured). No trust boundary crosses these uncovered lines. | Accepted |
 

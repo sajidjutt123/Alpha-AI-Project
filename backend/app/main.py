@@ -22,6 +22,17 @@ def create_app() -> FastAPI:
     settings = get_settings()
     setup_logging(settings.log_level)
 
+    # Optional error monitoring — a no-op without SENTRY_DSN (Phase 10).
+    if settings.sentry_dsn:
+        import sentry_sdk
+
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            environment=settings.environment,
+            traces_sample_rate=0.1,
+            send_default_pii=False,  # never ship tenant data with events
+        )
+
     # Interactive docs stay available in development/staging; a production
     # API must not advertise its surface (Phase 9 hardening).
     docs_enabled = settings.environment not in ("production",)

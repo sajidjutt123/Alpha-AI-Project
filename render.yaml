@@ -1,0 +1,47 @@
+# Render Blueprint — Alpha AI backend (Phase 10).
+#
+# Deploy: Dashboard → New → Blueprint → select this repo (render.yaml at
+# repo root is picked up automatically), or `render blueprint launch`.
+#
+# Database: bring your own Postgres (Supabase recommended — see
+# docs/deployment.md for the Supabase runbook; set the vars below from its
+# connection strings). The pre-deploy hook runs migrations with the owner
+# role; the app itself connects as the RLS-bound `alpha_app` role created
+# by those migrations.
+
+services:
+  - type: web
+    name: alpha-ai-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: starter
+    healthCheckPath: /api/v1/health
+    preDeployCommand: python -m app.db.migrate
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        sync: false          # postgresql+asyncpg://alpha_app:<APP_DB_PASSWORD>@.../postgres
+      - key: ADMIN_DATABASE_URL
+        sync: false          # owner connection for migrations (Supabase: session pooler URI)
+      - key: APP_DB_PASSWORD
+        sync: false          # password interpolated into the alpha_app role DDL
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false          # legacy HS256 secret, if your project still uses one
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WEBHOOK_URL
+        sync: false          # https://<service>.onrender.com/api/v1/webhooks/twilio
+      - key: DEFAULT_ORGANIZATION_SLUG
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false          # e.g. ["https://alpha-ai.vercel.app"]

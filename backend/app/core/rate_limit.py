@@ -85,15 +85,21 @@ def reset_limiters() -> None:
 
 
 def client_ip(request: Request) -> str:
-    """Best-effort client IP.
+    """Best-effort client IP for rate-limit keying.
 
-    `request.client.host` is the socket peer — the connecting proxy, not the
-    browser, when deployed behind one. We deliberately do NOT trust
-    `X-Forwarded-For` here: it is client-settable, and a spoofed header must
-    never buy an attacker a fresh budget. Platforms that terminate TLS in
-    front of the API should set `--proxy-headers` / forward the real IP at
-    the socket level (uvicorn `--forwarded-allow-ips`, see deployment docs).
+    Deployments run behind exactly one platform proxy (Railway/Render/
+    Vercel/nginx — see docs/deployment.md), where the socket peer is the
+    proxy, not the browser. `X-Forwarded-For` is a comma chain where every
+    entry EXCEPT the last can be client-supplied (a caller can open a
+    connection with `X-Forwarded-For: 1.2.3.4` and the proxy appends the
+    real IP after it). The LAST entry is the address the closest proxy
+    actually saw — the one entry the client cannot forge — so we key on it.
+    Direct exposure (local dev) has no header and falls back to the socket
+    peer. This powers throttling only, never authentication.
     """
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[-1].strip()
     return request.client.host if request.client else "unknown"
 
 

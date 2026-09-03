@@ -196,4 +196,4 @@ bell (badge + toast + browser notification when the tab is hidden).
 - **Secrets:** environment-only, `.env` never committed (`.env.example` documents every key)
 - **Supply chain:** `pip-audit` / `npm audit` clean (LangChain stack upgraded to patched majors in Phase 9)
 - **Residual risks:** documented with remediation windows in the audit report (R1–R4)
-- Production additions (Phase 10): Sentry error monitoring, audit log shipping
+- **Deployed (Phase 10):** Docker images (`backend/Dockerfile` root-context with migrations, `frontend/Dockerfile` standalone), `docker-compose.prod.yml`, `render.yaml`/`railway.json`/`vercel.json`, first-org bootstrap CLI, and the runbook in [deployment.md](deployment.md); optional Sentry wiring activates with `SENTRY_DSN`

@@ -25,7 +25,8 @@ from pathlib import Path
 import asyncpg
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-MIGRATIONS_DIR = REPO_ROOT / "database" / "migrations"
+# Containers ship migrations at a different path — override with MIGRATIONS_DIR.
+MIGRATIONS_DIR = Path(os.environ.get("MIGRATIONS_DIR") or REPO_ROOT / "database" / "migrations")
 SEED_FILE = REPO_ROOT / "database" / "seed.sql"
 
 PASSWORD_PLACEHOLDER = "__APP_ROLE_PASSWORD__"

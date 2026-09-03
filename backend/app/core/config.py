@@ -55,7 +55,11 @@ class Settings(BaseSettings):
     supabase_url: str | None = None
     supabase_anon_key: str | None = None
     supabase_service_role_key: str | None = None
-    # Supabase Auth JWT secret ("legacy" secret in the dashboard) — production.
+    # Supabase Auth JWT verification (Phase 10):
+    # - JWKS (preferred): asymmetric signing keys fetched from
+    #   {SUPABASE_URL}/auth/v1/.well-known/jwks.json, or this explicit URL.
+    supabase_jwks_url: str | None = None
+    # - Legacy fallback: the static HS256 "JWT secret" from the dashboard.
     supabase_jwt_secret: str | None = None
     # Development/test token secret — used only when the Supabase secret is
     # absent. Tokens are minted by tests via `app.core.auth.issue_dev_token`.
