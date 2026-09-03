@@ -66,6 +66,12 @@ class Settings(BaseSettings):
     # --- OpenAI (Phase 5: AI engine) ------------------------------------------
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
+    openai_base_url: str = "https://api.openai.com/v1"
+    # Conversation memory: most recent N messages included in prompts.
+    ai_history_window: int = 20
+    # Lead scoring classification thresholds (plan: 80/50).
+    score_threshold_hot: int = 80
+    score_threshold_warm: int = 50
 
     # --- Redis (Phase 8+: queue for async AI processing; optional) -----------
     redis_url: str | None = None

@@ -101,24 +101,28 @@ the `MessageProcessor` protocol is the swap point for Redis/Arq (Phase 8+)
 the `ConversationAgent` seam (`app/agents/`), which Phase 5 fills with the
 LangGraph pipeline; until then an `UnconfiguredAgent` logs and stays silent.
 
-## AI pipeline (Phase 5–6 target)
+## AI pipeline (Phase 5 — implemented; Phase 6 adds property tools)
 
 ```
-Incoming message
- → load conversation history
+Incoming message (queued job, tenant-bound session)
+ → load conversation history (windowed memory, AI_HISTORY_WINDOW)
  → intent detection        (BUY | SELL | RENT | GENERAL_INQUIRY | HUMAN_AGENT | UNKNOWN)
- → information extraction  (budget, location, type, bedrooms, urgency — structured JSON)
- → lead qualification      (0–100 score: budget 25, location 20, urgency 18/20,
-                            requirements 15/20, engagement 10/15 → HOT ≥80 / WARM ≥50 / COLD)
- → property search tool    (validated backend query)
- → business rules          (deterministic filters & scoring)
- → response generation     (conversational, grounded in tool results)
- → validation              (Pydantic-checked before anything is persisted or sent)
- → persist + send          (messages, lead updates, ai_runs telemetry)
+ → information extraction  (budget, location, type, bedrooms, urgency — strict JSON,
+                            Pydantic-validated; crore/lakh converted to PKR)
+ → lead qualification      (deterministic: budget 25, location 20, urgency 20,
+                            requirements 20, engagement 15 → HOT ≥80 / WARM ≥50 / COLD;
+                            weights & thresholds are configuration, never prompt text)
+ → business rules          (FRUSTRATED or HUMAN_AGENT → deterministic handoff +
+                            SYSTEM note; NEW → CONTACTED on first reply)
+ → response generation     (grounded, one question at a time, no invented listings)
+ → validation              (length-bounded, schema-checked)
+ → persist + send          (requirement updates, score, ai_runs telemetry per call)
 ```
 
-`ai_runs` records model, prompt version, token counts and latency for every
-execution — the basis for cost tracking and debugging.
+Failure handling: provider/JSON errors log and degrade to silence — the
+webhook already acked; a human or retry picks the thread up. Prompt
+injections are treated as data (guard text in every prompt; the scorer only
+reads structured facts). See `backend/app/agents/`.
 
 ## Security model (implemented progressively; audited in Phase 9)
 

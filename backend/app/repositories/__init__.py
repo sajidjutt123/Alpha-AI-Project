@@ -7,6 +7,7 @@ bound tenant context (`app.core.database.with_tenant`).
 """
 
 from app.repositories.agents import AgentRepository
+from app.repositories.ai_runs import AIRunRepository
 from app.repositories.analytics import AnalyticsRepository
 from app.repositories.base import BaseRepository
 from app.repositories.leads import LeadRepository
@@ -15,6 +16,7 @@ from app.repositories.organizations import OrganizationRepository
 from app.repositories.properties import PropertyRepository
 
 __all__ = [
+    "AIRunRepository",
     "AgentRepository",
     "AnalyticsRepository",
     "BaseRepository",

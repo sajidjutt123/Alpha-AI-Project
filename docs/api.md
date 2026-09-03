@@ -82,7 +82,7 @@ LOST     → NEW | CONTACTED          (re-engagement)
 
 | Phase | Group | Endpoints |
 |---|---|---|
-| 5–6 | AI (internal) | agent pipeline invoked by workers, not public HTTP |
+| 6 | AI tools | property search/matching wired into the agent (internal) |
 | 7+ | Realtime | Supabase Realtime channels (no REST) |
 
 ## Webhooks

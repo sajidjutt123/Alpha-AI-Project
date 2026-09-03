@@ -46,7 +46,11 @@ class InlineMessageProcessor:
         agent: ConversationAgent | None = None,
         sender: MessageSender | None = None,
     ) -> None:
-        self.agent: ConversationAgent = agent or UnconfiguredAgent()
+        # Real pipeline when an LLM is configured; otherwise the silent
+        # UnconfiguredAgent keeps the webhook flow intact and honest.
+        from app.agents.pipeline import build_conversation_agent
+
+        self.agent: ConversationAgent = agent or build_conversation_agent() or UnconfiguredAgent()
         self.sender: MessageSender = sender or build_sender()
 
     async def process(self, job: InboundMessageJob) -> None:
@@ -58,7 +62,7 @@ class InlineMessageProcessor:
                 return
             messages = MessageRepository(session)
             history = list(await messages.list_for_lead(job.lead_id))
-            reply = await self.agent.respond(lead, history)
+            reply = await self.agent.respond(session, lead, history)
             if reply is None:
                 return
             channel = _reply_channel(history)
