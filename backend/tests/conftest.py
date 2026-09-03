@@ -179,10 +179,17 @@ async def seed_organization(db_session: AsyncSession, *, name: str) -> OrgContex
     """Create an org with owner+teammate agents, leads, properties, messages."""
     org_id = uuid.uuid4()
     owner_auth, teammate_auth = uuid.uuid4(), uuid.uuid4()
+    digits = f"{uuid.uuid4().int % 10**8:08d}"
+    whatsapp_from = f"whatsapp:+1415{digits[:8]}"
+    sms_from = f"+1416{digits}"
 
     async with with_tenant(db_session, org_id):
         org = await OrganizationRepository(db_session).create(
-            name=name, slug=f"{name.lower()}-{org_id.hex[:10]}", organization_id=org_id
+            name=name,
+            slug=f"{name.lower()}-{org_id.hex[:10]}",
+            organization_id=org_id,
+            twilio_whatsapp_from=whatsapp_from,
+            twilio_sms_from=sms_from,
         )
         agents = AgentRepository(db_session)
         owner = await agents.add(

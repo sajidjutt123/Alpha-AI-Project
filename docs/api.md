@@ -82,6 +82,40 @@ LOST     → NEW | CONTACTED          (re-engagement)
 
 | Phase | Group | Endpoints |
 |---|---|---|
-| 4 | Webhooks | `POST /webhooks/twilio` (signature-verified, idempotent) |
 | 5–6 | AI (internal) | agent pipeline invoked by workers, not public HTTP |
 | 7+ | Realtime | Supabase Realtime channels (no REST) |
+
+## Webhooks
+
+### `POST /api/v1/webhooks/twilio` (Phase 4)
+
+Inbound WhatsApp/SMS from Twilio — `application/x-www-form-urlencoded`,
+authenticated by the **Twilio signature** (`X-Twilio-Signature`, HMAC-SHA1
+over the request URL + sorted form params), not by a bearer token.
+
+Pipeline (returns `200` with empty TwiML in milliseconds):
+
+```
+verify signature → route `To` number → organization
+  → identify lead by phone (get-or-create, ProfileName captured)
+  → store message (idempotent on MessageSid; retries acked, not reprocessed)
+  → enqueue AI processing (background) → 200
+```
+
+Behaviour:
+
+| Case | Result |
+|---|---|
+| Valid message | `200` TwiML, lead + message stored, job enqueued |
+| Duplicate `MessageSid` (Twilio retry) | `200`, ignored |
+| Delivery receipt / status callback (no Body) | `200`, ignored |
+| Bad/missing signature (token configured) | `403` |
+| `To` number not routed & no default slug | `404 not_found` |
+| Production without `TWILIO_AUTH_TOKEN` | `503` (refuses unsigned traffic) |
+
+Routing (migration 004): each organization owns its numbers
+(`organizations.twilio_whatsapp_from` / `twilio_sms_from`, unique). Shared
+number / sandbox deployments set `DEFAULT_ORGANIZATION_SLUG` as fallback.
+Outbound replies go out on the channel the customer last used (WhatsApp by
+default) via the configured sender — Twilio REST when credentials exist, a
+console sender in dev.

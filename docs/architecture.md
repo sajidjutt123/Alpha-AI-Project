@@ -91,6 +91,16 @@ one `organization_id`. Even buggy application code cannot mix tenants, and
 pooled connections cannot leak tenant state. Migrations run separately as
 the owner role. Details: [database.md](database.md).
 
+### D8 — Webhooks ack in milliseconds; processing is queued behind a seam
+The Twilio webhook authenticates by signature (never JWTs), routes the `To`
+number to an organization via SECURITY DEFINER lookups, persists the
+message idempotently (`MessageSid`), and enqueues an `InboundMessageJob`
+before returning empty TwiML. The MVP queue is FastAPI BackgroundTasks;
+the `MessageProcessor` protocol is the swap point for Redis/Arq (Phase 8+)
+— webhook code never changes. The AI reply itself runs in that job through
+the `ConversationAgent` seam (`app/agents/`), which Phase 5 fills with the
+LangGraph pipeline; until then an `UnconfiguredAgent` logs and stays silent.
+
 ## AI pipeline (Phase 5–6 target)
 
 ```

@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     twilio_auth_token: str | None = None
     twilio_whatsapp_from: str | None = None  # e.g. "whatsapp:+14155238886"
     twilio_sms_from: str | None = None  # e.g. "+14155238886"
+    # Public webhook URL if the internally visible URL differs (proxies).
+    twilio_webhook_url: str | None = None
+    # Fallback organization for shared-number deployments (sandbox/single
+    # tenant); when set, unroutable `To` numbers land in this organization.
+    default_organization_slug: str | None = None
 
     # --- OpenAI (Phase 5: AI engine) ------------------------------------------
     openai_api_key: str | None = None

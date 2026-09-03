@@ -9,9 +9,11 @@
 -- ===========================================================================
 -- Organizations
 -- ===========================================================================
-INSERT INTO organizations (id, name, slug) VALUES
-    ('11111111-1111-4111-8111-111111111111', 'Alpha Estates', 'alpha-estates'),
-    ('22222222-2222-4222-8222-222222222222', 'Galaxy Properties', 'galaxy-properties')
+INSERT INTO organizations (id, name, slug, twilio_whatsapp_from) VALUES
+    ('11111111-1111-4111-8111-111111111111', 'Alpha Estates', 'alpha-estates',
+     'whatsapp:+14155238886'),
+    ('22222222-2222-4222-8222-222222222222', 'Galaxy Properties', 'galaxy-properties',
+     NULL)
 ON CONFLICT (id) DO NOTHING;
 
 -- ===========================================================================

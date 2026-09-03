@@ -13,6 +13,7 @@ from app.api.routes import api_router
 from app.core.config import get_settings
 from app.core.errors import DomainError
 from app.core.logging import setup_logging
+from app.workers.messaging import InlineMessageProcessor
 
 
 def create_app() -> FastAPI:
@@ -57,6 +58,10 @@ def create_app() -> FastAPI:
         )
 
     app.include_router(api_router, prefix=settings.api_v1_prefix)
+
+    # Queue seam: the webhook enqueues jobs on this processor. Swap it for a
+    # Redis/Arq-backed implementation in Phase 8 without touching the webhook.
+    app.state.message_processor = InlineMessageProcessor()
 
     return app
 
