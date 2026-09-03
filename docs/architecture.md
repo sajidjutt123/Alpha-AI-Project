@@ -185,12 +185,15 @@ reconnect; `useRealtimeEvent(type, handler)` fans out to the kanban board
 (`message.created` for the open lead → live append), and the notification
 bell (badge + toast + browser notification when the tab is hidden).
 
-## Security model (implemented progressively; audited in Phase 9)
+## Security model (Phase 9 audit complete — docs/security-audit.md)
 
-- Supabase Auth for dashboard users; RLS for organization-level isolation
-- Twilio webhook signature validation on every inbound message
-- Pydantic validation on every payload boundary
-- Rate limiting on public endpoints
-- CORS restricted to known origins
-- Server-side secrets only; `.env` never committed
-- Audit logs and Sentry error monitoring in production
+- **Isolation:** RLS (`FORCE`) with a least-privilege role and transaction-scoped tenant GUC — isolation is a database guarantee, not an application promise (D7)
+- **Auth:** Supabase Auth JWTs in production (HS256 today, RS256/JWKS seam ready); dev tokens only in development/test; interactive docs and `/auth/dev-login` hard-off in production
+- **Webhook:** Twilio HMAC-SHA1 signature on every inbound message; fail-closed (503) if production lacks the token; idempotent on `MessageSid`
+- **Rate limiting:** sliding window per client IP — dev-login 10/min, webhook 240/min, 429 + `Retry-After`; in-process with a documented Redis swap
+- **Transport hardening:** OWASP security headers + `Cache-Control: no-store` on API paths (SSE-safe pure-ASGI middleware), 1 MiB request-body cap, CORS origin allowlist, CSP on the production dashboard
+- **Validation:** Pydantic at every boundary; LLM output treated as data (validated tools, deterministic scoring) — the model never owns business logic
+- **Secrets:** environment-only, `.env` never committed (`.env.example` documents every key)
+- **Supply chain:** `pip-audit` / `npm audit` clean (LangChain stack upgraded to patched majors in Phase 9)
+- **Residual risks:** documented with remediation windows in the audit report (R1–R4)
+- Production additions (Phase 10): Sentry error monitoring, audit log shipping

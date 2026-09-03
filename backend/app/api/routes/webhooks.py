@@ -32,6 +32,7 @@ from app.core.config import get_settings
 from app.core.database import get_db, with_tenant
 from app.core.errors import NotFoundError
 from app.core.events import defer_publish, flush_deferred
+from app.core.rate_limit import rate_limit
 from app.core.twilio_security import validate_signature
 from app.models.enums import MessageChannel, SenderType
 from app.repositories import LeadRepository, MessageRepository
@@ -74,7 +75,7 @@ def _parse_phone(raw: str) -> str:
     return raw.removeprefix("whatsapp:")
 
 
-@router.post("/twilio")
+@router.post("/twilio", dependencies=[Depends(rate_limit("webhook"))])
 async def twilio_webhook(
     request: Request,
     background_tasks: BackgroundTasks,

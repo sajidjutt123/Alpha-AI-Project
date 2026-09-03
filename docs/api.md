@@ -36,7 +36,7 @@ query in the request runs inside that tenant's Row Level Security context.
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/auth/dev-login` | `{email}` → `{token, agent}` — dev/demo only (refuses in production; production dashboards use Supabase Auth tokens as the bearer) |
+| POST | `/auth/dev-login` | `{email}` → `{token, agent}` — dev/demo only (refuses in production; production dashboards use Supabase Auth tokens as the bearer). Rate-limited: 10 req/min per IP → 429 + `Retry-After` (Phase 9) |
 
 ### System (public)
 
@@ -125,6 +125,8 @@ requested). Tenant-scoped under RLS like every other table.
 Inbound WhatsApp/SMS from Twilio — `application/x-www-form-urlencoded`,
 authenticated by the **Twilio signature** (`X-Twilio-Signature`, HMAC-SHA1
 over the request URL + sorted form params), not by a bearer token.
+Rate-limited (240 req/min per IP, Phase 9) and capped at a 1 MiB declared
+body → 413.
 
 Pipeline (returns `200` with empty TwiML in milliseconds):
 

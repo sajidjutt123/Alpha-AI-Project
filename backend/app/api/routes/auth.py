@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import issue_dev_token
 from app.core.config import get_settings
 from app.core.database import get_db
+from app.core.rate_limit import rate_limit
 from app.schemas.auth import DevLoginRequest, SessionAgent, TokenResponse
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/dev-login", response_model=TokenResponse)
+@router.post(
+    "/dev-login",
+    response_model=TokenResponse,
+    dependencies=[Depends(rate_limit("dev-login"))],
+)
 async def dev_login(
     payload: DevLoginRequest,
     db: Annotated[AsyncSession, Depends(get_db)],

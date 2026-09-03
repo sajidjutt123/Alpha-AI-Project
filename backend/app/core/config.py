@@ -35,6 +35,15 @@ class Settings(BaseSettings):
     # goes through its own server-side proxy, but browsers/tools may hit this).
     allowed_origins: list[str] = ["http://localhost:3000"]
 
+    # --- Security hardening (Phase 9) -----------------------------------------
+    # Sliding-window rate limits, requests per minute per client IP.
+    # 0 disables. In-process by design; Redis swap documented in
+    # docs/security-audit.md (F1).
+    dev_login_rate_limit: int = 10
+    webhook_rate_limit: int = 240
+    # Reject requests whose declared Content-Length exceeds this (bytes).
+    max_request_body_bytes: int = 1_048_576  # 1 MiB
+
     # --- Database (Phase 2: Supabase / local Postgres) -----------------------
     # Runtime role (`alpha_app`, least privilege, subject to RLS).
     database_url: str = "postgresql+asyncpg://alpha_app:alpha_app@localhost:5432/alpha_ai"

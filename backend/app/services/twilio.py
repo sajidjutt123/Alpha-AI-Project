@@ -14,6 +14,8 @@ import logging
 from typing import Protocol
 from uuid import uuid4
 
+import httpx2 as httpx
+
 from app.core.config import get_settings
 from app.models.enums import MessageChannel
 
@@ -38,13 +40,19 @@ class MessageSender(Protocol):
 class TwilioRestSender:
     """Sends via the Twilio Messages REST API (async)."""
 
-    def __init__(self, account_sid: str, auth_token: str) -> None:
+    def __init__(
+        self,
+        account_sid: str,
+        auth_token: str,
+        *,
+        transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
         self.account_sid = account_sid
         self.auth_token = auth_token
+        # Transport seam: tests inject a MockTransport instead of the network.
+        self._transport = transport
 
     async def send(self, *, to: str, body: str, channel: MessageChannel) -> str:
-        import httpx2 as httpx
-
         settings = get_settings()
         from_number = (
             settings.twilio_whatsapp_from
@@ -61,7 +69,7 @@ class TwilioRestSender:
             "Body": body,
         }
         async with httpx.AsyncClient(
-            auth=(self.account_sid, self.auth_token), timeout=10
+            auth=(self.account_sid, self.auth_token), timeout=10, transport=self._transport
         ) as client:
             response = await client.post(url, data=data)
             response.raise_for_status()

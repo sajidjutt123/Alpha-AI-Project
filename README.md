@@ -40,6 +40,19 @@ inbound replies and AI responses live; the bell dropdown lists the latest
 dashboard, then post a Twilio webhook (or run the backend webhook tests'
 `inbound_form` shape) and watch the events arrive.
 
+## Testing & security (Phase 9)
+
+```bash
+# backend: 163 tests + coverage (96%), incl. the security suite
+cd backend && pytest --cov=app
+
+# frontend: unit tests (SSE parsing / backoff)
+cd frontend && npm test
+```
+
+Security posture and the full audit (findings, fixes, accepted risks,
+dependency remediation) live in [docs/security-audit.md](docs/security-audit.md).
+
 ## Quickstart (local)
 
 ```bash
@@ -90,7 +103,7 @@ CI runs the same commands on every push/PR (`.github/workflows/ci.yml`).
 | 6 | Property matching + LangGraph workflow + validated tools | ✅ **done** |
 | 7 | Agent dashboard (auth, KPIs, Kanban, live chat, properties) | ✅ **done** |
 | 8 | Realtime & notifications (SSE event bus, live board/transcript, bell + toasts) | ✅ **done** |
-| 9 | Testing + security audit | ⬜ up next |
+| 9 | Testing + security audit (96% coverage, rate limiting, headers, CVE remediation) | ✅ **done** |
 | 10 | Deployment (Vercel + Railway/Render + Supabase) | ⬜ |
 | 11 | Demo + sales package | ⬜ |
 
