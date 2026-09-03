@@ -1,0 +1,9 @@
+# Development dependencies — install with:
+#   pip install -r requirements.txt -r requirements-dev.txt
+
+-r requirements.txt
+
+pytest>=8,<9
+httpx2>=2,<3
+ruff>=0.6
+mypy>=1.11

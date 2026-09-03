@@ -1,0 +1,11 @@
+# Files excluded from the backend Docker build context
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+tests/
+.env
+.env.*
+*.md

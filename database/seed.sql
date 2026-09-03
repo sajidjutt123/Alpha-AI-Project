@@ -1,0 +1,5 @@
+-- Alpha AI — seed data
+--
+-- Phase 4 seeds a realistic Pakistani-market property catalogue
+-- (PKR prices, DHA Lahore / Bahria Town / Karachi-style listings) plus a
+-- demo organization and agent for the dashboard.

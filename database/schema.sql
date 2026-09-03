@@ -1,0 +1,5 @@
+-- Alpha AI — database schema
+-- Multi-tenant PostgreSQL schema (Supabase-compatible).
+--
+-- Full DDL, enums, indexes, and RLS policies are delivered in Phase 2.
+-- This file will hold the canonical schema; migrations in ./migrations/.
